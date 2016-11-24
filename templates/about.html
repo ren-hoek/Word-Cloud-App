@@ -1,0 +1,50 @@
+{% extends "layout.html" %}
+{% block head %}
+{{ super() }}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-sm-1"></div>
+    <div class="col-sm-10">
+      <h2>Aim</h2>
+      <p>Making it easier to learn Flask</p>
+      <div id="cloud"></div>
+    </div>
+    <div class="col-sm-1"></div>
+  </div>
+</div>
+
+<script>
+  d3.json('/data', function(error, words) {
+  console.log(words);
+  
+  d3.layout.cloud().size([800,300])
+  .words(words)
+//  .rotate(0)
+  .fontSize(function(d) {return d.size / 4 })
+  .on("end", draw) 
+  .start();
+
+  function draw(words) {
+  d3.select("#cloud").append("svg")
+  .attr("width", 850)
+  .attr("height", 350)
+  .attr("class", "wordcloud")
+  .append("g")
+  .attr("transform", "translate(320,200)")
+  .selectAll("text")
+  .data(words)
+  .enter().append("text")
+  .style("font-size", function(d) {return d.size +"px";})
+  .attr("transform", function(d) {
+  return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+  })
+  .text(function(d) {return d.text});
+  }
+  
+  
+  });
+</script>
+{% endblock %}
