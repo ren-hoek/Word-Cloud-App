@@ -8,8 +8,7 @@
   <div class="row">
     <div class="col-sm-1"></div>
     <div class="col-sm-10">
-      <h2>Aim</h2>
-      <p>Making it easier to learn Flask</p>
+      <h2>Word Clouds</h2>
       <div id="cloud"></div>
     </div>
     <div class="col-sm-1"></div>
@@ -17,31 +16,42 @@
 </div>
 
 <script>
+  
   d3.json('/data', function(error, words) {
   console.log(words);
-  
-  d3.layout.cloud().size([800,300])
-  .words(words)
-//  .rotate(0)
-  .fontSize(function(d) {return d.size / 4 })
-  .on("end", draw) 
-  .start();
 
+  var fontsize = d3.scale.linear()
+  .domain(d3.extent(words, function(d) {return d.size;}))
+  .range([20,150])
+  
+  var layout = d3.layout.cloud().size([950,600])
+  .words(words)
+  .padding(0)
+  .rotate(0)
+  .text(function(d) {return d.text;})
+  .fontSize(function(d) {return fontsize(d.size); })
+  .on("end", draw);
+  
+  layout.start();
+
+  function end(words) {console.log(JSON.stringify(words));}
+  
   function draw(words) {
   d3.select("#cloud").append("svg")
-  .attr("width", 850)
-  .attr("height", 350)
-  .attr("class", "wordcloud")
+  .attr("width", layout.size()[0])
+  .attr("height", layout.size()[1])
+  //.attr("class", "wordcloud")
   .append("g")
-  .attr("transform", "translate(320,200)")
+  .attr("transform", "translate("+layout.size()[0]/2+","+layout.size()[1]/2+")")
   .selectAll("text")
   .data(words)
   .enter().append("text")
-  .style("font-size", function(d) {return d.size +"px";})
+  .style("font-size", function(d) {return fontsize(d.size)  +"px";})
+  .style("fill", function(d, i) {return "black"; })
   .attr("transform", function(d) {
   return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
   })
-  .text(function(d) {return d.text});
+  .text(function(d) {return d.text;});
   }
   
   
